@@ -2,6 +2,7 @@ import pandas as pd
 import mysql.connector
 import os
 import concurrent.futures
+from pathlib import Path
 
 # Configuración de la conexión a la base de datos MySQL
 DB_CONFIG = {
@@ -86,12 +87,13 @@ def main():
         print(f"Error de MySQL al limpiar la tabla: {err}")
         return
 
-    input_dir = r"C:\Users\adrif\Documents\PROYECTOS VSCODE\PYTHON\mantenimientos-main\input_files"
-    try:
-        file_paths = [os.path.join(input_dir, f) for f in os.listdir(input_dir) if f.lower().endswith('.xlsx')]
-    except FileNotFoundError:
+    input_dir = Path(__file__).resolve().parents[1] / "input_files"
+
+    if not input_dir.exists():
         print(f"No se encontró el directorio de entrada: {input_dir}")
         return
+
+    file_paths = [str(path) for path in input_dir.glob('*.xlsx')]
 
     if not file_paths:
         print(f"No se encontraron archivos Excel en la ruta: {input_dir}")
@@ -118,3 +120,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
