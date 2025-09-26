@@ -1,0 +1,25 @@
+# Exclude local dev artifacts from Docker build context
+.git
+.gitignore
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+Thumbs.db
+
+# Python virtualenvs
+venv/
+.venv/
+
+# Jupyter and notebooks caches
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Local data that should not be baked into the image
+input_files/
+output/
+
+# OS / editor files
+.vscode/
+.idea/

@@ -3,10 +3,9 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Instala dependencias del sistema
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    software-properties-common \
     git \
     && rm -rf /var/lib/apt/lists/*
 
