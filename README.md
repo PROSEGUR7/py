@@ -48,8 +48,8 @@ streamlit run app.py
 ### Docker
 
 ```bash
-docker build -t mantenimientos-streamlit .
-docker run -p 8501:8501 mantenimientos-streamlit
+-docker build -t mantenimientos-streamlit .
+-docker run -p 8501:8501 mantenimientos-streamlit
 ```
 
 ## Estructura del Proyecto
