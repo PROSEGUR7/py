@@ -13,6 +13,43 @@ DB_CONFIG = {
     "database": "railway"
 }
 
+def resolve_input_dir():
+    """Resolve the location of the input_files folder for different deployments."""
+    env_dir = os.getenv("INPUT_FILES_DIR")
+    if env_dir:
+        candidate = Path(env_dir).expanduser()
+        if candidate.exists():
+            return candidate.resolve()
+
+    script_path = Path(__file__).resolve()
+    parents = list(script_path.parents)
+    candidate_dirs = []
+
+    if len(parents) > 1:
+        candidate_dirs.append(parents[1] / "input_files")
+        candidate_dirs.append(parents[1] / "py" / "input_files")
+    else:
+        candidate_dirs.append(parents[0] / "input_files")
+
+    for parent in parents[2:]:
+        candidate_dirs.append(parent / "input_files")
+
+    seen = set()
+    final_candidates = []
+    for candidate in candidate_dirs:
+        resolved = candidate.resolve()
+        key = str(resolved)
+        if key not in seen:
+            seen.add(key)
+            final_candidates.append(resolved)
+
+    for candidate in final_candidates:
+        if candidate.exists():
+            return candidate
+
+    return final_candidates[0]
+
+
 def process_file(file_path):
     """Procesa un único archivo Excel y lo carga en la base de datos."""
     archivo = os.path.basename(file_path)
@@ -87,13 +124,13 @@ def main():
         print(f"Error de MySQL al limpiar la tabla: {err}")
         return
 
-    input_dir = Path(__file__).resolve().parents[1] / "input_files"
+    input_dir = resolve_input_dir()
 
     if not input_dir.exists():
         print(f"No se encontró el directorio de entrada: {input_dir}")
         return
 
-    file_paths = [str(path) for path in input_dir.glob('*.xlsx')]
+    file_paths = [str(path) for path in sorted(input_dir.rglob('*.xlsx'))]
 
     if not file_paths:
         print(f"No se encontraron archivos Excel en la ruta: {input_dir}")
