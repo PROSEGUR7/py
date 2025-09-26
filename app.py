@@ -93,25 +93,36 @@ def _build_component_key(prefix, title, index):
     return f"{prefix}_{safe}_{index}"
 
 
-def render_echarts_chart(chart, key, height=500):
+
+def render_echarts_chart(chart, key, height=500, prefer='auto'):
     if chart is None:
         st.warning('Gráfico no disponible.')
         return
 
     height_px = _parse_height_value(height)
     height_css = f"{height_px}px"
-    try:
-        options = json.loads(chart.dump_options())
-        st_echarts(options=options, height=height_css, key=key)
-        return
-    except Exception:
-        pass
 
-    try:
-        st_pyecharts(chart, height=height_css, key=f"{key}_pye")
-        return
-    except Exception:
-        pass
+    def _try_echarts():
+        options = json.loads(chart.dump_options())
+        st_echarts(options=options, height=height_css, width='100%', key=f"{key}_echarts")
+
+    def _try_pyecharts():
+        st_pyecharts(chart, height=height_css, width='100%', key=f"{key}_pye")
+
+    renderers = []
+    if prefer == 'pyecharts':
+        renderers = [_try_pyecharts, _try_echarts]
+    elif prefer == 'echarts':
+        renderers = [_try_echarts, _try_pyecharts]
+    else:
+        renderers = [_try_echarts, _try_pyecharts]
+
+    for renderer in renderers:
+        try:
+            renderer()
+            return
+        except Exception:
+            continue
 
     try:
         html = chart.render_embed()
@@ -280,14 +291,14 @@ def show_analysis_page():
             st.write("##### Comparativo Mensual (Barras)")
             if 'bar' in chart_group and chart_group['bar']:
                 bar_key = _build_component_key("analysis_bar", tipo_seleccionado, i)
-                render_echarts_chart(chart_group['bar'], key=bar_key)
+                render_echarts_chart(chart_group['bar'], key=bar_key, prefer='pyecharts')
             else:
                 st.warning("Gráfico de barras no disponible.")
 
             st.write("##### Análisis de Totales (Pastel)")
             if 'pie' in chart_group and chart_group['pie']:
                 pie_key = _build_component_key("analysis_pie", tipo_seleccionado, i)
-                render_echarts_chart(chart_group['pie'], key=pie_key)
+                render_echarts_chart(chart_group['pie'], key=pie_key, prefer='pyecharts')
             else:
                 st.warning("Gráfico de pastel no disponible.")
 
